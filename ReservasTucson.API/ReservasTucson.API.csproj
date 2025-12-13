@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="2.3.0" />
+    <PackageReference Include="NLog" Version="6.0.6" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="6.1.0" />
+    <PackageReference Include="NLog.Web.AspNetCore" Version="6.1.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="6.6.2" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="6.6.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ReservasTucson.Authentication\ReservasTucson.Authentication.csproj" />
+    <ProjectReference Include="..\ReservasTucson.DataAccess\ReservasTucson.DataAccess.csproj" />
+    <ProjectReference Include="..\ReservasTucson.Domain\ReservasTucson.Domain.csproj" />
+    <ProjectReference Include="..\ReservasTucson.Repositories\ReservasTucson.Repositories.csproj" />
+    <ProjectReference Include="..\ReservasTucson.Services\ReservasTucson.Services.csproj" />
+  </ItemGroup>
+
+</Project>
