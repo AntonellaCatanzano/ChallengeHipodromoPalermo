@@ -1,5 +1,6 @@
 ﻿
 using ReservasTucson.Domain.DTO;
+using ReservasTucson.Domain.Entities;
 
 namespace ReservasTucson.Services.Interfaces
 {
@@ -9,5 +10,6 @@ namespace ReservasTucson.Services.Interfaces
         Task<ReservaMesaDTO> GetById(int id);
         Task<List<ReservaMesaDTO>> GetMesasByReservaId(int reservaId);
         Task<ReservaMesaDTO> GetByReservaId(int reservaId);
+        Task<ReservaMesaDTO> InsertAsync(ReservaMesaDTO entity);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using ReservasTucson.Domain.DTO;
+using ReservasTucson.Domain.Entities;
 
 public interface IReservaService
 {
@@ -8,22 +9,15 @@ public interface IReservaService
     Task<ReservaDTO> CrearReservaCumpleAsync(ReservaCreateCumpleDTO reservaCumpleDto, int usuarioId);
 
     // Cambios de estado
-    Task<ReservaDTO> ConfirmarReservaAsync(int reservaId);
-    Task<ReservaDTO> CancelarReservaAsync(int reservaId, string observacion);
-    Task<ReservaDTO> MarcarNoAsistioAsync(int reservaId);
-    
-    Task<ReservaDetailDTO> GetByIdAsync(int id);
+    Task<ReservaDTO> ConfirmarAsync(int reservaIdint, int usuarioId);
+    Task<ReservaDTO> CancelarAsync(int reservaId, string observacion, int usuarioId);
+    Task<ReservaDTO> MarcarNoAsistioAsync(int reservaId, int usuarioId);
 
-    Task<List<ReservaListItemDTO>> GetAllAsync(
-        int page = 1,
-        int pageSize = 20,
-        DateTime? fecha = null,
-        int? tipoReservaId = null,
-        int? estadoReservaId = null,
-        string? nombre = null,
-        string? email = null
-    );
+    // Listados Paginados 
+    Task<PaginatedList<ReservaListItemDTO>> GetReservasPaginadasAsync(ReservaFilterDTO filtros, int pageNumber, int pageSize);
+    Task<ReservaDetailDTO> GetDetalleReservaAsync(int reservaId);
+    Task<List<ReservaDTO>> GetAllAsync();
 
-    
-    Task<List<int>> AsignarMesasAsync(AsignarMesasRequestDTO mesasDto);
+    Task<ReservaDTO> GetByIdAsync(int id);
+
 }

@@ -28,15 +28,6 @@ namespace ReservasTucson.Domain.DTO
         
         public string? PaqueteContratado { get; set; }
 
-        #region Relaciones
-        
-        [Required(ErrorMessage = "El campo {0} es obligatorio")]        
-        public int ReservaId { get; set; }     
-        
-        public int? MesaId { get; set; }
-
-        public MesaDTO? Mesa { get; set; }
-
-        #endregion
+        public int ReservaId { get; set; }
     }
 }

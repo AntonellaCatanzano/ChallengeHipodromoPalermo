@@ -42,6 +42,64 @@ namespace ReservasTucson.Services.Implementations
             await _unitOfWork.SaveChanges();
 
             return resultado;
+        }        
+
+        public async Task<bool> EstaDisponibleAsync(
+            int mesaId,
+            DateTime fechaHora,
+            int duracionMinutos,
+            int? reservaIdExcluir = null)
+        {
+            var mesa = await _unitOfWork.MesaRepository.GetById(mesaId);
+
+            if (mesa == null || !mesa.Activa)
+                return false;
+
+            var reservas = await _unitOfWork.ReservaRepository.GetAllAsync();
+
+            var inicio = fechaHora;
+            var fin = fechaHora.AddMinutes(duracionMinutos);
+
+            var conflicto = reservas.Any(r =>
+                r.Id != reservaIdExcluir &&
+                r.ReservasMesas.Any(rm => rm.MesaId == mesaId) &&
+                inicio < r.FechaHora.AddMinutes(r.TipoReserva.TiempoPermanenciaMinutos) &&
+                r.FechaHora < fin);
+
+            return !conflicto;
         }
+
+        public async Task<List<MesaDTO>> GetMesasDisponiblesAsync(
+            DateTime fechaHora,
+            int duracionMinutos,
+            int cantidadPersonas,
+            bool soloVip)
+        {
+            var mesas = await _unitOfWork.MesaRepository.GetAll();
+
+            var disponibles = new List<Mesa>();
+
+            foreach (var mesa in mesas)
+            {
+                if (!mesa.Activa)
+                    continue;
+
+                if (soloVip && !mesa.EsVip)
+                    continue;
+
+                if (mesa.Capacidad < cantidadPersonas)
+                    continue;
+
+                var disponible = await EstaDisponibleAsync(
+                    mesa.Id,
+                    fechaHora,
+                    duracionMinutos);
+
+                if (disponible)
+                    disponibles.Add(mesa);
+            }
+
+            return _mapper.Map<List<MesaDTO>>(disponibles);
+        }     
     }
 }

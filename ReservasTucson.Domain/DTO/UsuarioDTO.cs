@@ -6,7 +6,7 @@ namespace ReservasTucson.Domain.DTO
 {
     public class UsuarioDTO
     {        
-        public int Id { get; set; }
+        public int IdUsuario { get; set; }
 
         [Required(ErrorMessage = "El campo {0} es obligatorio")]
         [DataType(DataType.Text)]

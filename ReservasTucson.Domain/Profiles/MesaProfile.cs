@@ -17,8 +17,6 @@ namespace ReservasTucson.Domain.Profiles
                 .ForMember(destino => destino.Descripcion, option => option.MapFrom(origen => origen.Descripcion))
                 .ForMember(destino => destino.EsVip, option => option.MapFrom(origen => origen.EsVip))
                 .ForMember(destino => destino.Activa, option => option.MapFrom(origen => origen.Activa))
-                .ForMember(destino => destino.DetalleReserva, option => option.Ignore())
-
            .ReverseMap();
         }
     }

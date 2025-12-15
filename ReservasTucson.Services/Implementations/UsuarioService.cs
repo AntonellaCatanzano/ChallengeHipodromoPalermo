@@ -42,9 +42,9 @@ namespace ReservasTucson.Services.Implementations
                 throw new Exception("El Tipo de Usuario especificado no existe.");
             }
 
-            var model = _mapper.Map<Usuario>(entity);
+            var model = _mapper.Map<Usuario>(entity);            
 
-            var usuario = await _unitOfWork.UsuarioRepository.InsertUsuario(model);
+            var usuario = await _unitOfWork.UsuarioRepository.InsertUsuarioAsync(model);
 
             await _unitOfWork.SaveChanges();
 

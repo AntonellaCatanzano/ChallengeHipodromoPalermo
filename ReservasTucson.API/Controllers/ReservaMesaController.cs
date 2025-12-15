@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ReservasTucson.Domain.DTO;
+using ReservasTucson.Domain.Support.Helpers;
 using ReservasTucson.Services.Implementations;
 using ReservasTucson.Services.Interfaces;
 using Swashbuckle.AspNetCore.Annotations;
@@ -109,6 +110,31 @@ namespace ReservasTucson.API.Controllers
             catch (Exception ex)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, $"{ex.Message}");
+            }
+        }
+
+        [SwaggerOperation(Summary = "Asigna una mesa a una reserva existente")]
+        [HttpPost("InsertMesa")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ReservaMesaDTO))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> InsertMesa([FromBody] ReservaMesaDTO reservaMesaDto)
+        {
+            try
+            {
+                if (reservaMesaDto == null)
+                    return BadRequest("Datos de la reserva incompletos.");
+
+                var response = await _reservaMesaService.InsertAsync(reservaMesaDto);
+                return Ok(response);
+            }
+            catch (BusinessException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 

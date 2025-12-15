@@ -40,8 +40,20 @@ namespace ReservasTucson.Repositories.Implementations
 
         public async Task<Cliente> GetByEmailAsync(string email)
         {
-            return await _dbContext.Clientes
+            var cliente = await _dbContext.Clientes
                 .FirstOrDefaultAsync(c => c.Email.ToLower() == email.ToLower());
+
+            return cliente; 
+        }
+
+        public async Task<Cliente> GetByEmailOrCuitAsync(string email, string cuit)
+        {
+            var cliente = await _dbContext.Clientes
+                .FirstOrDefaultAsync(c =>
+                    c.Email.ToLower() == email.ToLower() ||
+                    c.Cuit == cuit);
+
+            return cliente;
         }
     }
 }

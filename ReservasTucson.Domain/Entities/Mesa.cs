@@ -29,7 +29,7 @@ namespace ReservasTucson.Domain.Entities
         [DataType(DataType.Text)]
         [StringLength(100)]
         [Column("Ubicacion")]
-        public string Ubicacion { get; set; }         // salon, terraza, VIP
+        public string Ubicacion { get; set; }         
 
         [Required(ErrorMessage = "El campo {0} es obligatorio")]
         [Column("EsVip")]
@@ -38,7 +38,6 @@ namespace ReservasTucson.Domain.Entities
         [Required(ErrorMessage = "El campo {0} es obligatorio")]
         [Column("Activa")]
         public bool Activa { get; set; } = true;
-
-        public virtual DetalleReserva? DetalleReserva { get; set; }
+        
     }
 }

@@ -39,7 +39,7 @@ namespace ReservasTucson.Domain.Support.Helpers
 
         #region Encriptacion
 
-        public static string EncryptWord = "Evalia";
+        public static string EncryptWord = "Reservas Tucson";
         /// <summary>
         /// Encripta el valor a base64
         /// </summary>
@@ -90,62 +90,10 @@ namespace ReservasTucson.Domain.Support.Helpers
             }
 
             return dateString;
-        }
-
-        public static string GenerateVerificationCode()
-        {
-            Random rnd = new Random();
-            int val = rnd.Next(100000, 999999);
-            return val.ToString();
-        }
+        }       
 
 
-        /// <summary>
-        /// Metodo de validación de legajo con digito verificador
-        /// dentro de la cadena
-        /// </summary>
-        /// <param name="rut">string</param>
-        /// <returns>booleano</returns>
-        public static bool ValidarLegajo(string legajo)
-        {
-            legajo = legajo.Replace(".", "").ToUpper();
-
-            Regex expresion = new Regex("^([0-9]+-[0-9K])$");
-
-            string dv = legajo.Substring(legajo.Length - 1, 1);
-
-            if (!expresion.IsMatch(legajo))
-            {
-                return false;
-            }
-            char[] charCorte = { '-' };
-            string[] legajoTemp = legajo.Split(charCorte);
-            if (dv != Digito(int.Parse(legajoTemp[0])))
-            {
-                return false;
-            }
-            return true;
-        }
-
-        /// <summary>
-        /// Método que valida el rut con el digito verificador
-        /// por separado
-        /// </summary>
-        /// <param name="legajo">integer</param>
-        /// <param name="dv">char</param>
-        /// <returns>booleano</returns>
-        public static bool ValidarLegajo(string legajo, string dv)
-        {
-            return ValidarLegajo(legajo + "-" + dv);
-        }
-
-
-        /// <summary>
-        /// método que calcula el digito verificador a partir
-        /// de la mantisa del legajo
-        /// </summary>
-        /// <param name="legajo"></param>
-        /// <returns></returns>
+        
 
         public static bool ValidarPassword(string password)
         {
@@ -182,35 +130,7 @@ namespace ReservasTucson.Domain.Support.Helpers
             return true;
         }
 
-        public static string Digito(int legajo)
-        {
-            int suma = 0;
-            int multiplicador = 1;
-
-            while (legajo != 0)
-            {
-                multiplicador++;
-                if (multiplicador == 8) multiplicador = 2;
-
-                suma += (legajo % 10) * multiplicador;
-                legajo = legajo / 10;
-            }
-
-            suma = 11 - (suma % 11);
-
-            if (suma == 11)
-            {
-                return "0";
-            }
-            else if (suma == 10)
-            {
-                return "K";
-            }
-            else
-            {
-                return suma.ToString();
-            }
-        }
+       
         #endregion
     }
 }

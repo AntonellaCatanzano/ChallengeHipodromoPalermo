@@ -10,7 +10,7 @@ namespace ReservasTucson.Domain.Profiles
         public UsuarioProfile()
         {
             CreateMap<Usuario, UsuarioDTO>()  
-                .ForMember(destino => destino.Id, option => option.MapFrom(origen => origen.Id))
+                .ForMember(destino => destino.IdUsuario, option => option.MapFrom(origen => origen.IdUsuario))
                 .ForMember(destino => destino.Nombre, option => option.MapFrom(origen => origen.Nombre))
                 .ForMember(destino => destino.Email, option => option.MapFrom(origen => origen.Email))
                 .ForMember(destino => destino.PasswordHash, option => option.MapFrom(origen => origen.PasswordHash))

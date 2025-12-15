@@ -47,12 +47,6 @@ namespace ReservasTucson.Domain.Entities
         public int ReservaId { get; set; }           
         public virtual Reserva Reserva { get; set; }
 
-        [ForeignKey("IdMesa")]        
-        [Column("IdMesa")]
-        public int? MesaId { get; set; }
-        public virtual Mesa? Mesa { get; set; }
-
-
         #endregion
 
     }

@@ -52,5 +52,14 @@ namespace ReservasTucson.Repositories.Implementations
 
             return reserva;
         }
+
+        public async Task<ReservaMesa> AddAsync(ReservaMesa entity)
+        {
+            await _dbContext.ReservasMesas.AddAsync(entity);
+
+            await _dbContext.SaveChangesAsync();
+
+            return entity;
+        }
     }
 }

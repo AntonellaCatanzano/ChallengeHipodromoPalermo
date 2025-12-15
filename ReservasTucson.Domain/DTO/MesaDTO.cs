@@ -34,7 +34,6 @@ namespace ReservasTucson.Domain.DTO
         [Required(ErrorMessage = "El campo {0} es obligatorio")]
 
         public bool Activa { get; set; } = true;
-
-        public DetalleReservaDTO? DetalleReserva { get; set; }
+       
     }
 }

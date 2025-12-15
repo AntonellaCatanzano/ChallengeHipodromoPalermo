@@ -15,6 +15,6 @@ namespace ReservasTucson.Domain.Entities
         [DataType(DataType.Text)]
         [StringLength(100)]
         [Column("Descripcion")]
-        public string Descripcion { get; set; }   // "Cliente", "Empresa", "Recepcionista", etc.
+        public string Descripcion { get; set; }   
     }
 }

@@ -10,5 +10,7 @@ namespace ReservasTucson.Repositories.Interfaces
         Task<ReservaMesa> GetById(int id);
         Task<List<ReservaMesa>> GetMesasByReservaId(int reservaId);
         Task<ReservaMesa> GetByReservaId(int reservaId);
+        Task<ReservaMesa> AddAsync(ReservaMesa entity);
+        
     }
 }

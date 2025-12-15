@@ -6,6 +6,8 @@ using ReservasTucson.Services.Support;
 using ReservasTucson.Authentication.Support;
 using NLog;
 using NLog.Web;
+using ReservasTucson.Repositories.Interfaces;
+using ReservasTucson.Repositories.Seeds;
 
 var logger = LogManager.Setup()
     .LoadConfigurationFromAppSettings()
@@ -68,6 +70,14 @@ builder.Logging.ClearProviders();
 builder.Host.UseNLog();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var usuarioRepository = scope.ServiceProvider
+        .GetRequiredService<IUsuarioRepository>();
+
+    await UsuarioSeed.SeedAsync(usuarioRepository);
+}
 
 // ---------- SWAGGER ----------
 app.UseReservasTucsonSwagger();

@@ -22,11 +22,25 @@ namespace ReservasTucson.Services.Implementations
             var clientes = await _unitOfWork.ClienteRepository.GetAll();
 
             return _mapper.Map<List<ClienteDTO>>(clientes);
-        }
+        }        
 
         public async Task<ClienteDTO> GetById(int id)
         {
             var cliente = await _unitOfWork.ClienteRepository.GetById(id);
+
+            return _mapper.Map<ClienteDTO>(cliente);
+        }
+
+        public async Task<ClienteDTO> GetByEmail(string email)
+        {
+            var cliente = await _unitOfWork.ClienteRepository.GetByEmailAsync(email);
+
+            return _mapper.Map<ClienteDTO>(cliente);
+        }
+
+        public async Task<ClienteDTO> GetByEmailOrCuitAsync(string email, string cuit)
+        {
+            var cliente = await _unitOfWork.ClienteRepository.GetByEmailOrCuitAsync(email, cuit);
 
             return _mapper.Map<ClienteDTO>(cliente);
         }

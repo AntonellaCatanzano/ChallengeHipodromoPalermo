@@ -29,28 +29,16 @@ namespace ReservasTucson.API.Controllers
                 return Unauthorized(result);
 
             return Ok(result);
-        }
-
-        [AllowAnonymous]
-        [HttpPost("refreshToken")]
-        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDTO refreshTokenDTO)
-        {
-            var result = await _auth.RefreshTokenAsync(refreshTokenDTO);
-
-            if (result.Errores != null && result.Errores.Any())
-                return Unauthorized(result);
-
-            return Ok(result);
-        }
+        }        
 
         [Authorize]
         [HttpPost("logout")]
-        public async Task<IActionResult> Logout([FromBody] LogoutRequestDTO refreshTokenDTO)
+        public async Task<IActionResult> Logout()
         {
-            var result = await _auth.LogoutAsync(refreshTokenDTO.RefreshToken);
+            var result = await _auth.LogoutAsync();
 
-            if (!result)
-                return NotFound(new { mensaje = "El token actual no fue encontrado o ha expirado" });
+            if (!string.IsNullOrEmpty(result.Errores?.FirstOrDefault()))
+                return NotFound(new { mensaje = "El token no es válido o ya expiró" });            
 
             return Ok(new { mensaje = "Has cerrado sesión corectamente" });
         }

@@ -15,13 +15,6 @@ namespace ReservasTucson.Domain.Builders
                .WithOne(r => r.DetalleReserva)
                .HasForeignKey<DetalleReserva>(d => d.ReservaId)
                .OnDelete(DeleteBehavior.Cascade);
-
-            builder.HasOne(d => d.Mesa)
-               .WithOne(r => r.DetalleReserva)
-               .HasForeignKey<DetalleReserva>(d => d.MesaId)
-               .OnDelete(DeleteBehavior.Cascade);
-
-
         }
     }
 }

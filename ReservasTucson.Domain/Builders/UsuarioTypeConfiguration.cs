@@ -9,7 +9,7 @@ namespace ReservasTucson.Domain.Builders
     {
         public void Configure(EntityTypeBuilder<Usuario> builder)
         {
-            builder.HasKey(r => r.Id);
+            builder.HasKey(r => r.IdUsuario);
 
             builder.HasOne(er => er.TipoUsuario)
                .WithMany()

@@ -9,7 +9,7 @@ namespace ReservasTucson.Domain.Entities
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("IdUsuario")]
-        public int Id { get; set; }
+        public int IdUsuario { get; set; }
 
         [Required(ErrorMessage = "El campo {0} es obligatorio")]
         [DataType(DataType.Text)]

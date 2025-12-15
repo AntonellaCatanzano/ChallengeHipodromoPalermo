@@ -6,7 +6,7 @@ using ReservasTucson.Domain.Support.Helpers;
 using ReservasTucson.Services.Interfaces;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Security.Claims;
-
+using System.Threading.Tasks;
 
 namespace ReservasTucson.API.Controllers
 {
@@ -17,250 +17,185 @@ namespace ReservasTucson.API.Controllers
     public class ReservaController : ControllerBase
     {
         private readonly IReservaService _reservaService;
-        private readonly IUsuarioService _usuarioService;
 
-        public ReservaController(IReservaService reservaService, IUsuarioService usuarioService)
+        public ReservaController(IReservaService reservaService)
         {
             _reservaService = reservaService;
-            _usuarioService = usuarioService;
         }
 
-        
-
         #region Crear Reservas
-
         [HttpPost("CrearEstandar")]
         [SwaggerOperation(Summary = "Crea una reserva estándar")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ReservaDTO))]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ReservaDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> CrearReservaEstandar([FromBody] ReservaCreateStandardDTO reservaStandardDto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
+            if (!ModelState.IsValid) return ValidationProblem(ModelState);
             try
             {
-
-                int usuarioId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-
+                var usuarioId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
                 var result = await _reservaService.CrearReservaEstandarAsync(reservaStandardDto, usuarioId);
-
-                return Ok(result);
+                return CreatedAtAction(nameof(CrearReservaEstandar), new { id = result.Id }, result);
             }
             catch (BusinessException ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { error = ex.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Ocurrió un error: {ex.Message}");
             }
         }
 
         [HttpPost("CrearVip")]
         [SwaggerOperation(Summary = "Crea una reserva VIP")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ReservaDTO))]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ReservaDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> CrearReservaVip([FromBody] ReservaCreateVipDTO reservaVipDto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
+            if (!ModelState.IsValid) return ValidationProblem(ModelState);
             try
             {
-                int usuarioId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-
+                var usuarioId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
                 var result = await _reservaService.CrearReservaVipAsync(reservaVipDto, usuarioId);
-
-                return Ok(result);
+                return CreatedAtAction(nameof(CrearReservaVip), new { id = result.Id }, result);
             }
             catch (BusinessException ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { error = ex.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Ocurrió un error: {ex.Message}");
             }
         }
 
         [HttpPost("CrearCumple")]
         [SwaggerOperation(Summary = "Crea una reserva de cumpleaños")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ReservaDTO))]
+        [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(ReservaDTO))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> CrearReservaCumple([FromBody] ReservaCreateCumpleDTO reservaCumpleDto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
+            if (!ModelState.IsValid) return ValidationProblem(ModelState);
             try
             {
-                int usuarioId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-
+                var usuarioId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
                 var result = await _reservaService.CrearReservaCumpleAsync(reservaCumpleDto, usuarioId);
-
-                return Ok(result);
+                return CreatedAtAction(nameof(CrearReservaCumple), new { id = result.Id }, result);
             }
             catch (BusinessException ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { error = ex.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Ocurrió un error: {ex.Message}");
             }
         }
-
         #endregion
 
-        #region Acciones sobre Reserva
+        #region Acciones de Reserva
 
-        [HttpPost("Confirmar/{reservaId}")]
+        [Authorize(Roles = "Recepcionista")]
+        [HttpPost("{reservaId}/Confirmar")]
         [SwaggerOperation(Summary = "Confirma una reserva")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ReservaDTO))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> ConfirmarReserva(int reservaId)
         {
             try
             {
+                var usuarioId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
-                var result = await _reservaService.ConfirmarReservaAsync(reservaId);
+                var result = await _reservaService.ConfirmarAsync(reservaId, usuarioId);
 
                 return Ok(result);
             }
             catch (BusinessException ex)
             {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                return BadRequest(new { error = ex.Message });
             }
         }
 
+        [Authorize(Roles = "Recepcionista")]
         [HttpPost("Cancelar/{reservaId}")]
         [SwaggerOperation(Summary = "Cancela una reserva")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ReservaDTO))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> CancelarReserva(int reservaId, [FromBody] string observacion)
         {
             try
             {
-                var result = await _reservaService.CancelarReservaAsync(reservaId, observacion);
+                var usuarioId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
+                var result = await _reservaService.CancelarAsync(reservaId, observacion, usuarioId);
                 return Ok(result);
             }
             catch (BusinessException ex)
             {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                return BadRequest(new { error = ex.Message });
             }
         }
 
+        [Authorize(Roles = "Recepcionista")]
         [HttpPost("NoAsistio/{reservaId}")]
-        [SwaggerOperation(Summary = "Marca que el cliente no asistió a la reserva")]
+        [SwaggerOperation(Summary = "Marca una reserva como No Asistió")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ReservaDTO))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> MarcarNoAsistio(int reservaId)
         {
             try
             {
-                var result = await _reservaService.MarcarNoAsistioAsync(reservaId);
+                var usuarioId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+                var result = await _reservaService.MarcarNoAsistioAsync(reservaId, usuarioId);
 
                 return Ok(result);
             }
             catch (BusinessException ex)
             {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                return BadRequest(new { error = ex.Message });
             }
         }
-
         #endregion
 
         #region Consultas
 
-        [HttpGet("GetById/{id}")]
-        [SwaggerOperation(Summary = "Obtiene el detalle de una reserva por ID")]
+        [Authorize(Roles = "Recepcionista")]
+        [HttpGet("GetDetalle/{id}")]
+        [SwaggerOperation(Summary = "Obtiene el detalle de una reserva por Id")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ReservaDetailDTO))]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<IActionResult> GetDetalleReserva(int id)
         {
             try
             {
-                var result = await _reservaService.GetByIdAsync(id);
-                if (result == null)
-                    return NotFound();
-
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
-        }
-
-        [HttpGet("GetAll")]
-        [SwaggerOperation(Summary = "Obtiene todas las reservas con filtros opcionales")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ReservaListItemDTO>))]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetAll(
-            int page = 1, int pageSize = 20,
-            DateTime? fecha = null,
-            int? tipoReservaId = null,
-            int? estadoReservaId = null,
-            string? nombre = null,
-            string? email = null)
-        {
-            try
-            {
-                var result = await _reservaService.GetAllAsync(page, pageSize, fecha, tipoReservaId, estadoReservaId, nombre, email);
-
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
-        }
-
-        [HttpPost("AsignarMesas")]
-        [SwaggerOperation(Summary = "Asigna mesas a una reserva")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<int>))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> AsignarMesas([FromBody] AsignarMesasRequestDTO mesasDto)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            try
-            {
-                var result = await _reservaService.AsignarMesasAsync(mesasDto);
-
+                var result = await _reservaService.GetDetalleReservaAsync(id);
                 return Ok(result);
             }
             catch (BusinessException ex)
             {
-                return BadRequest(ex.Message);
+                return NotFound(new { error = ex.Message });
             }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
+        }
+
+        [Authorize(Roles = "Recepcionista")]
+        [HttpGet("ListadoConFiltros")]
+        [SwaggerOperation(Summary = "Obtiene reservas paginadas con filtros")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(PaginatedList<ReservaListItemDTO>))]
+        public async Task<IActionResult> GetReservasPaginadas([FromQuery] ReservaFilterDTO filtros, int pageNumber = 1, int pageSize = 10)
+        {
+            var result = await _reservaService.GetReservasPaginadasAsync(filtros, pageNumber, pageSize);
+            return Ok(result);
+        }
+
+        [Authorize(Roles = "Recepcionista")]
+        [HttpGet("GetAll")]
+        [SwaggerOperation(Summary = "Obtiene todas las reservas")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ReservaDTO>))]
+        public async Task<IActionResult> GetAllReservas()
+        {
+            var result = await _reservaService.GetAllAsync();
+            return Ok(result);
         }
 
         #endregion

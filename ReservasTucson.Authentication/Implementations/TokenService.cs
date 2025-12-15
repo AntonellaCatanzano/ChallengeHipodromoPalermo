@@ -27,12 +27,12 @@ namespace ReservasTucson.Authentication.Implementations
 
         public LoginResponseDTO GenerateTokens(LoginResponseDTO user)
         {
-            // Armo payload mínimo a partir del LoginResponseDTO ya poblado por AuthService
+            
             var payload = new TokenPayload
             {
                 Id = user.Id.ToString(),
                 Email = user.Email,
-                Roles = user.Grupos ?? Enumerable.Empty<string>(), // si usás Grupos como roles, mapear según corresponda
+                Roles = user.Grupos ?? Enumerable.Empty<string>(), 
                 Grupos = user.Grupos ?? Enumerable.Empty<string>()
             };
 

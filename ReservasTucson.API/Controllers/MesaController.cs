@@ -78,7 +78,7 @@ namespace ReservasTucson.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> InsertUsuario([FromBody] MesaDTO model)
+        public async Task<IActionResult> InsertMesa([FromBody] MesaDTO model)
         {
             try
             {
@@ -91,6 +91,28 @@ namespace ReservasTucson.API.Controllers
                 return Conflict($"No se puede crear la mesa porque {ex.Message}");
             }
         }
+
+        [SwaggerOperation(Summary = "Verifica si una mesa específica está disponible para una fecha y duración")]
+        [HttpGet("EstaDisponible/{mesaId}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(bool))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> EstaDisponible(
+            int mesaId,
+            [FromQuery] DateTime fechaHora,
+            [FromQuery] int duracionMinutos)
+        {
+            try
+            {
+                var disponible = await _mesaService.EstaDisponibleAsync(mesaId, fechaHora, duracionMinutos);
+                return Ok(disponible);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+        
 
         #endregion
     }

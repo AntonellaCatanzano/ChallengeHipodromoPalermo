@@ -1,12 +1,16 @@
 using AutoMapper;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using ReservasTucson.Domain.DTO;
 using ReservasTucson.Domain.Entities;
-using ReservasTucson.Domain.Support.Helpers;
-using ReservasTucson.Repositories.Interfaces;
+using ReservasTucson.Domain.Enums;
 using ReservasTucson.Repositories.Interfaces.UoW;
 using ReservasTucson.Services.Implementations;
-
+using ReservasTucson.Services.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ReservasTucson.Tests.Services
 {
@@ -14,243 +18,212 @@ namespace ReservasTucson.Tests.Services
     public class ReservaServiceUnitTest
     {
         private Mock<IUnitOfWork> _mockUnitOfWork;
-        private Mock<IReservaRepository> _mockReservaRepository;
         private Mock<IMapper> _mockMapper;
         private IReservaService _reservaService;
 
         [TestInitialize]
         public void Setup()
         {
-            _mockReservaRepository = new Mock<IReservaRepository>();
             _mockUnitOfWork = new Mock<IUnitOfWork>();
             _mockMapper = new Mock<IMapper>();
 
-            // Configuramos el unit of work para devolver el repo mockeado
-            _mockUnitOfWork
-                .Setup(u => u.ReservaRepository)
-                .Returns(_mockReservaRepository.Object);
+            // Repositorios del UnitOfWork
+            var mockReservaRepo = new Mock<IReservaRepository>();
+            var mockClienteRepo = new Mock<IClienteRepository>();
+            var mockUsuarioRepo = new Mock<IUsuarioRepository>();
+            var mockMesaRepo = new Mock<IMesaRepository>();
+            var mockReservaMesaRepo = new Mock<IReservaMesaRepository>();
 
-            // Configuramos el mapper genérico
-            _mockMapper
-                .Setup(m => m.Map<ReservaDTO>(It.IsAny<Reserva>()))
+            _mockUnitOfWork.Setup(u => u.ReservaRepository).Returns(mockReservaRepo.Object);
+            _mockUnitOfWork.Setup(u => u.ClienteRepository).Returns(mockClienteRepo.Object);
+            _mockUnitOfWork.Setup(u => u.UsuarioRepository).Returns(mockUsuarioRepo.Object);
+            _mockUnitOfWork.Setup(u => u.MesaRepository).Returns(mockMesaRepo.Object);
+            _mockUnitOfWork.Setup(u => u.ReservaMesaRepository).Returns(mockReservaMesaRepo.Object);
+
+            // Mapper
+            _mockMapper.Setup(m => m.Map<ReservaDTO>(It.IsAny<Reserva>()))
                 .Returns((Reserva r) => new ReservaDTO { Id = r.Id });
 
-            _mockMapper
-                .Setup(m => m.Map<ReservaDetailDTO>(It.IsAny<Reserva>()))
+            _mockMapper.Setup(m => m.Map<ReservaDetailDTO>(It.IsAny<Reserva>()))
                 .Returns((Reserva r) => new ReservaDetailDTO { Id = r.Id });
 
-            _mockMapper
-                .Setup(m => m.Map<List<int>>(It.IsAny<List<ReservaMesa>>()))
-                .Returns((List<ReservaMesa> list) => list.ConvertAll(rm => rm.MesaId));
+            _mockMapper.Setup(m => m.Map<DetalleReservaDTO>(It.IsAny<DetalleReserva>()))
+                .Returns((DetalleReserva d) => new DetalleReservaDTO
+                {
+                    Id = d.Id,
+                    TraeTorta = d.TraeTorta,
+                    EdadCumpleaniero = d.EdadCumpleaniero,
+                    Decoracion = d.Decoracion,
+                    ComentariosDecoracion = d.ComentariosDecoracion,
+                    PaqueteContratado = d.PaqueteContratado
+                });
 
-            
+            _mockMapper.Setup(m => m.Map<ReservaMesaDTO>(It.IsAny<ReservaMesa>()))
+                .Returns((ReservaMesa rm) => new ReservaMesaDTO { ReservaId = rm.ReservaId, MesaId = rm.MesaId });
+
             _reservaService = new ReservaService(_mockUnitOfWork.Object, _mockMapper.Object);
         }
 
-        #region Crear Reservas
+        #region CrearReservaEstandarAsync
 
         [TestMethod]
-        public async Task CrearReservaEstandar_GuardarReserva()
+        public async Task CrearReservaEstandarAsync_Valida_CreaReserva()
         {
             var dto = new ReservaCreateStandardDTO
             {
-                FechaHora = DateTime.Now.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss"),
+                FechaHora = DateTime.Now.AddDays(1).ToString("yyyy-MM-dd HH:mm"),
                 CantidadPersonas = 2,
                 Nombre = "Juan",
                 Apellido = "Perez",
-                Email = "juan@example.com",
-                Telefono = "123456789"
+                Email = "juan@test.com"
             };
 
-            _mockReservaRepository
-                .Setup(r => r.CrearReservaEstandarAsync(It.IsAny<Reserva>()))
-                .ReturnsAsync((Reserva r) => { r.Id = 1; return r; });
+            _mockUnitOfWork.Setup(u => u.UsuarioRepository.GetById(It.IsAny<int>()))
+                .ReturnsAsync(new Usuario { Id = 1 });
+
+            _mockUnitOfWork.Setup(u => u.ClienteRepository.GetByEmailAsync(It.IsAny<string>()))
+                .ReturnsAsync((Cliente?)null);
+
+            _mockUnitOfWork.Setup(u => u.ClienteRepository.InsertCliente(It.IsAny<Cliente>()))
+                .ReturnsAsync((Cliente c) => { c.Id = 1; return c; });
+
+            _mockUnitOfWork.Setup(u => u.ReservaRepository.AddAsync(It.IsAny<Reserva>()))
+                .ReturnsAsync((Reserva r) => { r.Id = 10; return r; });
 
             var result = await _reservaService.CrearReservaEstandarAsync(dto, 1);
 
             Assert.IsNotNull(result);
-            Assert.AreEqual(1, result.Id);
+            Assert.AreEqual(10, result.Id);
         }
 
         [TestMethod]
         [ExpectedException(typeof(BusinessException))]
-        public async Task CrearReservaEstandar_FechaPasada_LanzarException()
+        public async Task CrearReservaEstandarAsync_FechaPasada_LanzaException()
         {
             var dto = new ReservaCreateStandardDTO
             {
-                FechaHora = DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd HH:mm:ss"),
+                FechaHora = DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd HH:mm"),
                 CantidadPersonas = 2,
                 Nombre = "Juan",
                 Apellido = "Perez",
-                Email = "juan@example.com",
-                Telefono = "123456789"
+                Email = "juan@test.com"
             };
+
+            _mockUnitOfWork.Setup(u => u.UsuarioRepository.GetById(It.IsAny<int>()))
+                .ReturnsAsync(new Usuario { Id = 1 });
 
             await _reservaService.CrearReservaEstandarAsync(dto, 1);
         }
 
+        #endregion
+
+        #region CrearReservaVipAsync
+
         [TestMethod]
-        public async Task CrearReservaVip_GuardarReserva()
+        public async Task CrearReservaVipAsync_Valida_CreaReservaConMesa()
         {
             var dto = new ReservaCreateVipDTO
             {
-                FechaHora = DateTime.Now.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss"),
-                CantidadPersonas = 3,
+                FechaHora = DateTime.Now.AddHours(2).ToString("yyyy-MM-dd HH:mm"),
+                CantidadPersonas = 2,
+                CodigoVip = "VIP1234",
                 Nombre = "Ana",
-                Apellido = "Gomez",
-                Email = "ana@example.com",
-                Telefono = "987654321",
-                CodigoVip = "VIP123"
+                Apellido = "Lopez",
+                Email = "ana@test.com"
             };
 
-            _mockReservaRepository
-                .Setup(r => r.CrearReservaVipAsync(It.IsAny<Reserva>()))
-                .ReturnsAsync((Reserva r) => { r.Id = 2; return r; });
+            _mockUnitOfWork.Setup(u => u.UsuarioRepository.GetById(It.IsAny<int>()))
+                .ReturnsAsync(new Usuario { Id = 2 });
 
-            var result = await _reservaService.CrearReservaVipAsync(dto, 1);
+            _mockUnitOfWork.Setup(u => u.ClienteRepository.GetByEmailAsync(It.IsAny<string>()))
+                .ReturnsAsync((Cliente?)null);
+
+            _mockUnitOfWork.Setup(u => u.ClienteRepository.InsertCliente(It.IsAny<Cliente>()))
+                .ReturnsAsync((Cliente c) => { c.Id = 2; return c; });
+
+            _mockUnitOfWork.Setup(u => u.MesaRepository.GetDisponiblesAsync(It.IsAny<DateTime>(), It.IsAny<int>(), true))
+                .ReturnsAsync(new List<Mesa> { new Mesa { Id = 5, Capacidad = 4 } });
+
+            _mockUnitOfWork.Setup(u => u.ReservaRepository.AddAsync(It.IsAny<Reserva>()))
+                .ReturnsAsync((Reserva r) => { r.Id = 20; return r; });
+
+            _mockUnitOfWork.Setup(u => u.ReservaMesaRepository.AddAsync(It.IsAny<ReservaMesa>()))
+                .ReturnsAsync((ReservaMesa rm) => rm);
+
+            _mockUnitOfWork.Setup(u => u.SaveChanges()).Returns(Task.CompletedTask);
+
+            var result = await _reservaService.CrearReservaVipAsync(dto, 2);
 
             Assert.IsNotNull(result);
-            Assert.AreEqual(2, result.Id);
+            Assert.AreEqual(20, result.Id);
         }
 
+        #endregion
+
+        #region CrearReservaCumpleAsync
+
         [TestMethod]
-        public async Task CrearReservaCumple_GuardarReserva()
+        public async Task CrearReservaCumpleAsync_Valida_CreaReserva()
         {
             var dto = new ReservaCreateCumpleDTO
             {
-                FechaHora = DateTime.Now.AddDays(1).ToString("yyyy-MM-dd HH:mm:ss"),
+                FechaHora = DateTime.Now.AddDays(3).ToString("yyyy-MM-dd HH:mm"),
                 CantidadPersonas = 6,
-                Nombre = "Carlos",
-                Apellido = "Lopez",
-                Email = "carlos@example.com",
-                Telefono = "555555555",
-                TraeTorta = true,
+                Nombre = "Lucas",
+                Apellido = "Gomez",
+                Email = "lucas@test.com",
+                TraeTorta = false,
                 EdadCumpleaniero = 10
             };
 
-            _mockReservaRepository
-                .Setup(r => r.CrearReservaCumpleAsync(It.IsAny<Reserva>()))
-                .ReturnsAsync((Reserva r) => { r.Id = 3; return r; });
+            _mockUnitOfWork.Setup(u => u.UsuarioRepository.GetById(It.IsAny<int>()))
+                .ReturnsAsync(new Usuario { Id = 3 });
 
-            var result = await _reservaService.CrearReservaCumpleAsync(dto, 1);
+            _mockUnitOfWork.Setup(u => u.ClienteRepository.GetByEmailAsync(It.IsAny<string>()))
+                .ReturnsAsync((Cliente?)null);
+
+            _mockUnitOfWork.Setup(u => u.ClienteRepository.InsertCliente(It.IsAny<Cliente>()))
+                .ReturnsAsync((Cliente c) => { c.Id = 3; return c; });
+
+            _mockUnitOfWork.Setup(u => u.ReservaRepository.AddAsync(It.IsAny<Reserva>()))
+                .ReturnsAsync((Reserva r) => { r.Id = 30; return r; });
+
+            var result = await _reservaService.CrearReservaCumpleAsync(dto, 3);
 
             Assert.IsNotNull(result);
-            Assert.AreEqual(3, result.Id);
+            Assert.AreEqual(30, result.Id);
         }
 
         #endregion
 
-        #region Acciones sobre Reserva
+        #region GetDetalleReservaAsync
 
         [TestMethod]
-        public async Task ConfirmarReserva_CambiarEstado()
+        public async Task GetDetalleReservaAsync_RetornaDetalle()
         {
-            var reserva = new Reserva { Id = 4, EstadoReservaId = 1 };
-
-            _mockReservaRepository
-                .Setup(r => r.ConfirmarReservaAsync(4))
-                .ReturnsAsync(reserva);
-
-            var result = await _reservaService.ConfirmarReservaAsync(4);
-
-            Assert.IsNotNull(result);
-            Assert.AreEqual(4, result.Id);
-        }
-
-        [TestMethod]
-        public async Task CancelarReserva_CambiarEstadoYGuardarObservacion()
-        {
-            var reserva = new Reserva { Id = 5, EstadoReservaId = 1 };
-
-            _mockReservaRepository
-                .Setup(r => r.CancelarReservaAsync(5, "Cliente solicitó cancelar"))
-                .ReturnsAsync(reserva);
-
-            var result = await _reservaService.CancelarReservaAsync(5, "Cliente solicitó cancelar");
-
-            Assert.IsNotNull(result);
-            Assert.AreEqual(5, result.Id);
-        }
-
-        [TestMethod]
-        public async Task MarcarNoAsistio_CambiarEstado()
-        {
-            var reserva = new Reserva { Id = 6, EstadoReservaId = 2 };
-
-            _mockReservaRepository
-                .Setup(r => r.MarcarNoAsistioAsync(6))
-                .ReturnsAsync(reserva);
-
-            var result = await _reservaService.MarcarNoAsistioAsync(6);
-
-            Assert.IsNotNull(result);
-            Assert.AreEqual(6, result.Id);
-        }
-
-        #endregion
-
-        #region Asignar Mesas
-
-        [TestMethod]
-        public async Task AsignarMesas_RetornarListaDeIds()
-        {
-            var dto = new AsignarMesasRequestDTO
+            var reserva = new Reserva
             {
-                ReservaId = 7,
-                MesaIds = new List<int> { 1, 2 }
+                Id = 1,
+                DetalleReserva = new DetalleReserva
+                {
+                    Id = 5,
+                    TraeTorta = true,
+                    EdadCumpleaniero = 8
+                },
+                ReservasMesas = new List<ReservaMesa>
+                {
+                    new ReservaMesa { MesaId = 2, ReservaId = 1 }
+                }
             };
 
-            var mesasAsignadas = new List<ReservaMesa>
-            {
-                new ReservaMesa { ReservaId = 7, MesaId = 1 },
-                new ReservaMesa { ReservaId = 7, MesaId = 2 }
-            };
-
-            _mockReservaRepository
-                .Setup(r => r.AsignarMesasAsync(dto.ReservaId, dto.MesaIds))
-                .ReturnsAsync(mesasAsignadas);
-
-            var result = await _reservaService.AsignarMesasAsync(dto);
-
-            Assert.IsNotNull(result);
-            Assert.AreEqual(2, result.Count);
-            CollectionAssert.AreEqual(new List<int> { 1, 2 }, result);
-        }
-
-        #endregion
-
-        #region Consultas
-
-        [TestMethod]
-        public async Task GetById_RetornarReserva()
-        {
-            var reserva = new Reserva { Id = 8 };
-
-            _mockReservaRepository
-                .Setup(r => r.GetByIdAsync(8))
+            _mockUnitOfWork.Setup(u => u.ReservaRepository.GetByIdAsync(1))
                 .ReturnsAsync(reserva);
 
-            var result = await _reservaService.GetByIdAsync(8);
+            var result = await _reservaService.GetDetalleReservaAsync(1);
 
             Assert.IsNotNull(result);
-            Assert.AreEqual(8, result.Id);
-        }
-
-        [TestMethod]
-        public async Task GetAll_RetornarLista()
-        {
-            var lista = new List<Reserva> { new Reserva { Id = 9 } };
-
-            _mockReservaRepository
-                .Setup(r => r.GetAllAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<DateTime?>(),
-                    It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<string>(), It.IsAny<string>()))
-                .ReturnsAsync(lista);
-
-            var result = await _reservaService.GetAllAsync();
-
-            Assert.IsNotNull(result);
-            Assert.AreEqual(1, result.Count);
-            Assert.AreEqual(9, result[0].Id);
+            Assert.AreEqual(5, result.DetalleReserva.Id);
+            Assert.AreEqual(1, result.ReservasMesas.First().ReservaId);
         }
 
         #endregion

@@ -11,9 +11,9 @@ namespace ReservasTucson.Domain.DTO
         [DataType(DataType.Text)]
         [StringLength(200)]
         
-        public string Descripcion { get; set; } // Pendiente, Confirmada, Cancelada, NoAsistió
+        public string Descripcion { get; set; } 
 
         [Required(ErrorMessage = "El campo {0} es obligatorio")]        
-        public bool EsFinal { get; set; }  // Cancelada, NoAsistió
+        public bool EsFinal { get; set; }  
     }
 }

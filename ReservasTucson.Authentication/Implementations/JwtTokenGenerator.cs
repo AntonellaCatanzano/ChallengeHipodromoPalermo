@@ -29,6 +29,7 @@ namespace ReservasTucson.Authentication.Services
             {
                 new Claim(JwtRegisteredClaimNames.Sub, payload.Id),
                 new Claim(JwtRegisteredClaimNames.Email, payload.Email),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
             claims.AddRange(payload.Roles.Select(r => new Claim(ClaimTypes.Role, r)));

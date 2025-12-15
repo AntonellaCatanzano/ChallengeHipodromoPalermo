@@ -45,5 +45,18 @@ namespace ReservasTucson.Services.Implementations
 
             return _mapper.Map<List<ReservaMesaDTO>>(mesasReserva);
         }
+
+        public async Task<ReservaMesaDTO> InsertAsync(ReservaMesaDTO entity)
+        {
+            var model = _mapper.Map<ReservaMesa>(entity);
+
+            var reservasMesas = await _unitOfWork.ReservaMesaRepository.AddAsync(model);
+
+            var resultado = _mapper.Map<ReservaMesaDTO>(reservasMesas);
+
+            await _unitOfWork.SaveChanges();
+
+            return resultado;            
+        }
     }
 }

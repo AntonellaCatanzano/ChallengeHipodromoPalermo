@@ -27,34 +27,20 @@ namespace ReservasTucson.Repositories.Implementations
 
         public async Task<Usuario> GetById(int id)
         {
-            var usuario = await _dbContext.Usuarios.FindAsync(id);             
+            var usuario = await _dbContext.Usuarios
+                .Include(u => u.TipoUsuario)
+                .FirstOrDefaultAsync(u => u.IdUsuario == id);
 
             return usuario;
         }
 
-        public async Task<Usuario> InsertUsuario(Usuario entity)
+        public async Task<Usuario> InsertUsuarioAsync(Usuario usuario)
         {
-            // Verificar si ya existe un usuario con el mismo correo, nombre o apellido
-            var existingUser = await _dbContext.Usuarios.FirstOrDefaultAsync(u => u.Email == entity.Email);
+            _dbContext.Usuarios.Add(usuario);
 
-            // Si el usuario ya existe, lanzamos una excepción.
+            await _dbContext.SaveChangesAsync();
 
-            string value = Formatter.Base64Encode(entity.PasswordHash ?? "123456"); // Contraseña por defecto
-
-            entity.PasswordHash = value;
-
-            if (existingUser == null)
-            {
-                var usuario = await _dbContext.Usuarios.AddAsync(entity);
-
-                await _dbContext.SaveChangesAsync();
-
-                return entity;
-            }
-            else
-            {
-                throw new Exception("El email ingresado ya existe");
-            }
+            return usuario;
         }
 
         public async Task<List<Usuario>> GetByTipoUsuario(int tipoUsuarioId)
@@ -70,7 +56,15 @@ namespace ReservasTucson.Repositories.Implementations
         public async Task<Usuario?> GetByEmail(string email)
         {
             return await _dbContext.Usuarios
+                .Include(u => u.TipoUsuario)
                 .FirstOrDefaultAsync(u => u.Email == email);
         }
+
+        public async Task<bool> AnyAsync()
+        {
+            return await _dbContext.Usuarios.AnyAsync();
+        }
+
+        
     }
 }

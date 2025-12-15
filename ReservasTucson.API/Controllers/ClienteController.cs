@@ -92,6 +92,46 @@ namespace ReservasTucson.API.Controllers
             }
         }
 
+        [SwaggerOperation(Summary = "Obtiene un cliente por Email")]
+        [HttpGet("GetByEmail/{email}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ClienteDTO))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetByEmailOrCuitAsync(string email)
+        {
+            try
+            {
+                var response = await _clienteService.GetByEmail(email);
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"{ex.Message}");
+            }
+        }
+
+        [SwaggerOperation(Summary = "Obtiene un cliente por Email o Cuit")]
+        [HttpGet("GetByEmail/{email}/{cuit}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ClienteDTO))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetByEmailOrCuitAsync(string email, string cuit)
+        {
+            try
+            {
+                var response = await _clienteService.GetByEmailOrCuitAsync(email, cuit);
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"{ex.Message}");
+            }
+        }
+
         #endregion
     }
 }

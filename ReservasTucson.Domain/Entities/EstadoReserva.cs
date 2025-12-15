@@ -15,10 +15,10 @@ namespace ReservasTucson.Domain.Entities
         [DataType(DataType.Text)]
         [StringLength(200)]
         [Column("Descripcion")]
-        public string Descripcion { get; set; } // Pendiente, Confirmada, Cancelada, NoAsistió
+        public string Descripcion { get; set; } 
 
         [Required(ErrorMessage = "El campo {0} es obligatorio")]
         [Column("EsFinal")]
-        public bool EsFinal { get; set; }  // Cancelada, NoAsistió => true
+        public bool EsFinal { get; set; }  
     }
 }

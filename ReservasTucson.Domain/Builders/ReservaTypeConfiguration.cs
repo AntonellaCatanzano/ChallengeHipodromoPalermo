@@ -18,23 +18,36 @@ namespace ReservasTucson.Domain.Builders
             builder.HasOne(c => c.Cliente)
                 .WithMany()
                 .HasForeignKey(fk => fk.ClienteId)
-                .HasPrincipalKey(pk => pk.Id);            
+                .HasPrincipalKey(pk => pk.Id)
+                .OnDelete(DeleteBehavior.Cascade); ;
 
             builder.HasOne(tp => tp.TipoReserva)
                 .WithMany()
                 .HasForeignKey(fk => fk.TipoReservaId)
-                .HasPrincipalKey(pk => pk.Id);
+                .OnDelete(DeleteBehavior.Cascade); 
 
             builder.HasOne(er => er.EstadoReserva)
                .WithMany()
                .HasForeignKey(fk => fk.EstadoReservaId)
-               .HasPrincipalKey(pk => pk.Id);
+               .OnDelete(DeleteBehavior.Cascade); 
+               
 
-            builder.HasMany(rm => rm.ReservasMesas)
-                .WithOne(r => r.Reserva)
-                .HasPrincipalKey(pk => pk.Id);
+            builder.HasMany(r => r.ReservasMesas)
+               .WithOne(rm => rm.Reserva)
+               .HasForeignKey(rm => rm.ReservaId)
+               .OnDelete(DeleteBehavior.Cascade);
 
-            
+            builder.HasOne(r => r.Usuario)
+                .WithMany()
+                .HasForeignKey(r => r.UsuarioId)
+                .HasPrincipalKey(u => u.IdUsuario);
+
+
+            builder.HasOne(r => r.DetalleReserva)
+               .WithOne(d => d.Reserva)
+               .HasForeignKey<DetalleReserva>(d => d.ReservaId)
+               .OnDelete(DeleteBehavior.Cascade);
+
 
         }
     }

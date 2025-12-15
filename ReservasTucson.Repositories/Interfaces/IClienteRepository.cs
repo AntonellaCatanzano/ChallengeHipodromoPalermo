@@ -14,5 +14,6 @@ namespace ReservasTucson.Repositories.Interfaces
         Task<Cliente> GetById(int id);
 
         Task<Cliente> GetByEmailAsync(string email);
+        Task<Cliente> GetByEmailOrCuitAsync(string email, string cuit);
     }
 }
